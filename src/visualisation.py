@@ -1,6 +1,5 @@
-from bokeh.plotting import figure, show
 from bokeh.io import output_notebook
-from .database import DatabaseManager
+from bokeh.plotting import figure, show
 
 
 def visualize_results(results):
