@@ -9,8 +9,11 @@ class TestDataProcessing(TestCase):
         self.session = self.db_manager.get_session()
 
     def test_load_data(self):
+
+        # act
         load_data(self.db_manager)
-        # Check if data was loaded
+
+        # assert
         self.assertTrue(self.session.query(TrainingData).count() > 0)
         self.assertTrue(self.session.query(IdealFunctions).count() > 0)
         self.assertTrue(self.session.query(TestData).count() > 0)

@@ -28,15 +28,14 @@ class TestDatabase(TestCase):
         self.session.close()
         self.db_manager.engine.dispose()
 
-        # Retry removing the database file to handle Windows file locking
         db_path = 'function_fitter.db'
         if os.path.exists(db_path):
-            for _ in range(5):  # Retry up to 5 times
+            for _ in range(5):
                 try:
                     os.remove(db_path)
                     break
                 except PermissionError:
-                    time.sleep(0.1)  # Wait briefly before retrying
+                    time.sleep(0.1)
             else:
                 print(f"Warning: Could not remove {db_path} after retries")
 

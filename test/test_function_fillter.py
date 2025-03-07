@@ -7,7 +7,6 @@ class TestFunctionFitter(TestCase):
     def setUp(self):
         self.db_manager = DatabaseManager()
         self.session = self.db_manager.get_session()
-        # Here you would need to populate your database with test data or mock data
 
     def test_least_squares_residual(self):
         train_y = np.array([1, 2, 3])
@@ -17,5 +16,4 @@ class TestFunctionFitter(TestCase):
 
     def test_select_best_functions(self):
         best_functions = select_best_functions(self.db_manager)
-        self.assertEqual(len(best_functions), 4)  # Check if 4 functions are returned
-        # Here you would add more checks based on your data and selection criteria
+        self.assertEqual(len(best_functions), 4)

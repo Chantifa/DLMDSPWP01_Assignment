@@ -15,7 +15,7 @@ class TrainingData(Base):
 
 class IdealFunctions(Base):
     __tablename__ = 'ideal_functions'
-    x = Column(Float, primary_key=True)  # UNIQUE constraint implied by primary key
+    x = Column(Float, primary_key=True)
     y1 = Column(Float)
     y2 = Column(Float)
     y3 = Column(Float)

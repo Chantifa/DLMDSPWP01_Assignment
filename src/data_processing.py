@@ -16,7 +16,6 @@ def load_data(db_manager):
 
     session = db_manager.Session()
 
-    # Load train.csv for TrainingData
     try:
         train_df = pd.read_csv(r'C:\Users\X\PycharmProjects\DLMDSPWP01_Assignment\data\train.csv')
         print("Train Columns:", train_df.columns.tolist())
@@ -32,7 +31,6 @@ def load_data(db_manager):
     except FileNotFoundError:
         print("train.csv not found; skipping TrainingData insertion.")
 
-    # Load ideal.csv for IdealFunctions
 
     try:
         ideal_df = pd.read_csv(r'C:\Users\X\PycharmProjects\DLMDSPWP01_Assignment\data\ideal.csv')
@@ -50,7 +48,6 @@ def load_data(db_manager):
     except FileNotFoundError:
         print("ideal.csv not found; skipping IdealFunctions insertion.")
 
-    # Load test.csv for TestData
     try:
             test_df = pd.read_csv(r'C:\Users\X\PycharmProjects\DLMDSPWP01_Assignment\data\test.csv')
             print("Test Columns:", test_df.columns.tolist())

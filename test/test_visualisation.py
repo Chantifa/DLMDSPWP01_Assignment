@@ -7,14 +7,12 @@ class TestVisualization(TestCase):
     def setUp(self):
         self.db_manager = DatabaseManager()
         self.session = self.db_manager.get_session()
-        # Here you would need to populate your database with test data or mock data
 
     @patch('src.visualisation.show')
     def test_visualize_results(self, mock_show):
-        # Mock data for testing
         results = [
             {'x': 1, 'y': 1, 'delta_y': 0.1, 'ideal_func_no': 1},
             {'x': 2, 'y': 2, 'delta_y': 0.2, 'ideal_func_no': 2}
         ]
         visualize_results(results)
-        mock_show.assert_called()  # Check if show was called, indicating visualization was attempted
+        mock_show.assert_called()
