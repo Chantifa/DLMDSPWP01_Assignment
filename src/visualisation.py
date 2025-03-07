@@ -9,6 +9,6 @@ def visualize_results(results):
 
     for result in results:
         if result['ideal_func_no'] != 0:  # If mapped to an ideal function
-            p.circle(result['x'], result['y'], legend_label=f"Test Data - Func {result['ideal_func_no']}", size=5)
+            p.scatter(result['x'], result['y'], legend_label=f"Test Data - Func {result['ideal_func_no']}", size=5)
 
     show(p)

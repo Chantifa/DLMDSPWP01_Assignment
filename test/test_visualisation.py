@@ -9,7 +9,7 @@ class TestVisualization(TestCase):
         self.session = self.db_manager.get_session()
         # Here you would need to populate your database with test data or mock data
 
-    @patch('src.visualization.show')
+    @patch('src.visualisation.show')
     def test_visualize_results(self, mock_show):
         # Mock data for testing
         results = [
