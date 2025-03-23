@@ -1,18 +1,95 @@
-from unittest import TestCase
-from src.visualisation import visualize_results
-from src.database import DatabaseManager
+import unittest
 from unittest.mock import patch
+import pandas as pd
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource
+from src.visualisation import visualise_results
 
-class TestVisualization(TestCase):
+class TestVisualiseResults(unittest.TestCase):
+
     def setUp(self):
-        self.db_manager = DatabaseManager()
-        self.session = self.db_manager.get_session()
+        self.df_train = pd.DataFrame({
+            'x': [1, 2, 3],
+            'y1': [1, 2, 3],
+            'y2': [2, 4, 6],
+            'y3': [3, 6, 9],
+            'y4': [4, 8, 12]
+        })
+        self.df_ideal = pd.DataFrame({
+            'x': [1, 2, 3],
+            'y1': [1.1, 2.1, 3.1],
+            'y2': [2.2, 4.2, 6.2],
+            'y3': [3.3, 6.3, 9.3],
+            'y4': [4.4, 8.4, 12.4]
+        })
+        self.best_functions = [
+            (1, 2, 0.1),
+            (2, 3, 0.2),
+            (3, 1, 0.15),
+            (4, 4, 0.25)
+        ]
+        self.df_results = pd.DataFrame({
+            'x': [1.5, 2.5],
+            'y': [2.5, 5.5],
+            'ideal_func_no': [2, 3],
+            'delta_y': [0.05, 0.1]
+        })
 
     @patch('src.visualisation.show')
-    def test_visualize_results(self, mock_show):
-        results = [
-            {'x': 1, 'y': 1, 'delta_y': 0.1, 'ideal_func_no': 1},
-            {'x': 2, 'y': 2, 'delta_y': 0.2, 'ideal_func_no': 2}
-        ]
-        visualize_results(results)
-        mock_show.assert_called()
+    def test_visualise_results(self, mock_show):
+        visualise_results(self.df_train, self.df_ideal, self.best_functions, self.df_results)
+
+        mock_show.assert_called_once()
+
+        colors = ['blue', 'red', 'green', 'orange']
+        ideal_to_color = {ideal_no: colors[train_no - 1] for train_no, ideal_no, _ in self.best_functions}
+        expected_colors = self.df_results['ideal_func_no'].map(ideal_to_color).fillna('gray').tolist()
+
+        self.assertEqual(self.df_results['color'].tolist(), ['blue', 'red'])  # ideal_no=2->blue (train_no=1), ideal_no=3->red (train_no=2)
+
+        # Simulate plot creation
+        p = figure(title="Function Fitter", x_axis_label='x', y_axis_label='y', width=800, height=600)
+        for i, color in enumerate(colors, start=1):
+            p.line(self.df_train['x'], self.df_train[f'y{i}'], line_width=2, color=color, legend_label=f'Training y{i}')
+        for (train_no, ideal_no, _), color in zip(self.best_functions, colors):
+            p.line(self.df_ideal['x'], self.df_ideal[f'y{ideal_no}'], line_width=2, color=color, line_dash='dashed',
+                   legend_label=f'Ideal for y{train_no}')
+        source = ColumnDataSource(self.df_results)
+        p.scatter('x', 'y', source=source, size=8, color='color', alpha=0.6, legend_label='Test Data')
+        p.legend.location = "top_left"
+        p.legend.click_policy = "hide"
+
+        # Verify plot properties
+        self.assertEqual(p.title.text, "Function Fitter")
+        self.assertEqual(p.xaxis.axis_label, 'x')
+        self.assertEqual(p.yaxis.axis_label, 'y')
+        self.assertEqual(p.width, 800)
+        self.assertEqual(p.height, 600)
+        self.assertEqual(p.legend.location, "top_left")
+        self.assertEqual(p.legend.click_policy, "hide")
+
+        self.assertEqual(len(p.renderers), 9)  # 4 training + 4 ideal lines + 1 scatter
+
+        # Check training line renderers
+        for i, renderer in enumerate(p.renderers[:4], 1):
+            self.assertEqual(renderer.glyph.line_color, colors[i - 1])
+            self.assertEqual(renderer.glyph.line_width, 2)
+            self.assertEqual(renderer.glyph.line_dash, [])  # Solid line
+
+        # Check ideal line renderers
+        for i, (train_no, ideal_no, _) in enumerate(self.best_functions, 4):
+            renderer = p.renderers[i]
+            self.assertEqual(renderer.glyph.line_color, colors[train_no - 1])
+            self.assertEqual(renderer.glyph.line_width, 2)
+            self.assertEqual(renderer.glyph.line_dash, [6])  # Dashed line
+
+        # Check scatter renderer
+        scatter = p.renderers[-1]  # Last renderer is the scatter
+        self.assertEqual(scatter.glyph.size, 8)
+        self.assertEqual(scatter.glyph.fill_alpha, 0.6)
+        self.assertEqual(scatter.data_source.data['color'].tolist(), ['blue', 'red'])  # Convert NumPy array to list
+
+    def test_invalid_input(self):
+        invalid_df_train = pd.DataFrame({'x': [1, 2], 'y1': [1, 2]})
+        with self.assertRaises(KeyError):
+            visualise_results(invalid_df_train, self.df_ideal, self.best_functions, self.df_results)

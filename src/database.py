@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, Column, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
 
 Base = declarative_base()
 
@@ -69,14 +68,19 @@ class IdealFunctions(Base):
 
 class TestData(Base):
     __tablename__ = 'test_data'
-    x = Column(Float, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    x = Column(Float)
     y = Column(Float)
-    delta_y = Column(Float, nullable=True)  # Allow NULL for rows not yet mapped
-    ideal_func_no = Column(Integer, nullable=True)  # Allow NULL for rows not yet mapped
+    delta_y = Column(Float, nullable=True)
+    ideal_func_no = Column(Integer, nullable=True)
 
 class DatabaseManager:
     def __init__(self):
         self.engine = create_engine('sqlite:///function_fitter.db')
         self.Session = sessionmaker(bind=self.engine)
+
     def get_session(self):
         return self.Session()
+
+    def create_tables(self):
+        Base.metadata.create_all(self.engine)

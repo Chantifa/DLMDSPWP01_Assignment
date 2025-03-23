@@ -3,20 +3,13 @@ from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 import os
 import time
-
-from src.database import DatabaseManager, TrainingData, Base
+from src.database import DatabaseManager, TrainingData, IdealFunctions, TestData, Base
 from sqlalchemy import text
 
 class TestDatabase(TestCase):
-    def __init__(self, methodName: str = "runTest"):
-        super().__init__(methodName)
-        self.db_manager = None
-
     def setUp(self):
         self.db_manager = DatabaseManager()
         self.session = self.db_manager.get_session()
-
-        # Drop and recreate all tables
         with self.db_manager.engine.connect() as connection:
             connection.execute(text("DROP TABLE IF EXISTS training_data"))
             connection.execute(text("DROP TABLE IF EXISTS ideal_functions"))
@@ -27,7 +20,6 @@ class TestDatabase(TestCase):
     def tearDown(self):
         self.session.close()
         self.db_manager.engine.dispose()
-
         db_path = 'function_fitter.db'
         if os.path.exists(db_path):
             for _ in range(5):
