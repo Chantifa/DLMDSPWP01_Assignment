@@ -1,17 +1,20 @@
-# test/test_testdata_mapper.py
+# Unit tests for the testdata_mapper module in the function fitting application.
+# Verifies the selection of best ideal functions and mapping of test data.
+
 import unittest
 from src.database import DatabaseManager, TrainingData, IdealFunctions, TestData
 from src.testdata_mapper import select_best_ideal_functions, map_test_data
 from sqlalchemy import text
 import math
 
+# Test case class for testdata_mapper functionality
 class TestTestDataMapper(unittest.TestCase):
     def setUp(self):
-        """Set up a test database with sample data."""
+        # Sets up a test database with sample data for training, ideal functions, and test data
         self.db_manager = DatabaseManager()
         self.session = self.db_manager.get_session()
 
-        # Drop and recreate tables
+        # Drops and recreates tables to ensure a clean state
         with self.db_manager.engine.connect() as connection:
             connection.execute(text("DROP TABLE IF EXISTS training_data"))
             connection.execute(text("DROP TABLE IF EXISTS ideal_functions"))
@@ -20,14 +23,14 @@ class TestTestDataMapper(unittest.TestCase):
 
         self.db_manager.create_tables()
 
-        # Sample training data
+        # Populates sample training data
         training_data = [
             TrainingData(x=1.0, y1=1.0, y2=2.0, y3=3.0, y4=4.0),
             TrainingData(x=2.0, y1=1.1, y2=2.1, y3=3.1, y4=4.1)
         ]
         self.session.add_all(training_data)
 
-        # Sample ideal functions: provide all 50 columns (simplified values)
+        # Populates sample ideal functions with values for all 50 y-columns
         ideal_data = [
             IdealFunctions(
                 x=1.0,
@@ -52,7 +55,7 @@ class TestTestDataMapper(unittest.TestCase):
         ]
         self.session.add_all(ideal_data)
 
-        # Sample test data
+        # Populates sample test data
         test_data = [
             TestData(x=1.0, y=1.06),
             TestData(x=2.0, y=2.16)
@@ -62,12 +65,12 @@ class TestTestDataMapper(unittest.TestCase):
         self.session.commit()
 
     def tearDown(self):
-        """Clean up after tests."""
+        # Cleans up by closing the session and disposing of the engine
         self.session.close()
         self.db_manager.engine.dispose()
 
     def test_select_best_ideal_functions(self):
-        """Test that select_best_ideal_functions returns a list of 4 tuples with correct selections."""
+        # Tests that select_best_ideal_functions returns correct function mappings
         best_functions = select_best_ideal_functions(self.db_manager)
         self.assertEqual(len(best_functions), 4)
         for func in best_functions:
@@ -75,11 +78,11 @@ class TestTestDataMapper(unittest.TestCase):
             self.assertTrue(1 <= train_no <= 4, f"train_no {train_no} out of range")
             self.assertTrue(1 <= ideal_no <= 50, f"ideal_no {ideal_no} out of range")
             self.assertTrue(max_dev >= 0, f"max_dev {max_dev} should be non-negative")
-        self.assertEqual(best_functions[0][1], 1)  # y1 should match ideal y1
-        self.assertEqual(best_functions[1][1], 2)  # y2 should match ideal y2
+        self.assertEqual(best_functions[0][1], 1)  # Verifies y1 matches ideal y1
+        self.assertEqual(best_functions[1][1], 2)  # Verifies y2 matches ideal y2
 
     def test_map_test_data(self):
-        """Test that map_test_data correctly assigns test points."""
+        # Tests that map_test_data correctly assigns test points to ideal functions
         best_functions = select_best_ideal_functions(self.db_manager)
         results = map_test_data(self.db_manager, best_functions)
         self.assertEqual(len(results), 2)

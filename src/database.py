@@ -1,9 +1,14 @@
+# Database models and manager for function fitting application using SQLAlchemy.
+# Defines database schema for training data, ideal functions, test data, and database operations.
+
 from sqlalchemy import create_engine, Column, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+# Base class for SQLAlchemy declarative models
 Base = declarative_base()
 
+# Represents the training data table with x values and corresponding y1-y4 outputs
 class TrainingData(Base):
     __tablename__ = 'training_data'
     x = Column(Float, primary_key=True)
@@ -12,6 +17,7 @@ class TrainingData(Base):
     y3 = Column(Float)
     y4 = Column(Float)
 
+# Represents the ideal functions table with x values and 50 corresponding y outputs
 class IdealFunctions(Base):
     __tablename__ = 'ideal_functions'
     x = Column(Float, primary_key=True)
@@ -66,6 +72,7 @@ class IdealFunctions(Base):
     y49 = Column(Float)
     y50 = Column(Float)
 
+# Represents the test data table with x, y, and metadata for function fitting results
 class TestData(Base):
     __tablename__ = 'test_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -74,13 +81,18 @@ class TestData(Base):
     delta_y = Column(Float, nullable=True)
     ideal_func_no = Column(Integer, nullable=True)
 
+# Manages database connection and session creation for SQLAlchemy operations
 class DatabaseManager:
     def __init__(self):
+        # Initializes SQLite database connection
         self.engine = create_engine('sqlite:///function_fitter.db')
+        # Creates session factory bound to the engine
         self.Session = sessionmaker(bind=self.engine)
 
     def get_session(self):
+        # Returns a new SQLAlchemy session for database operations
         return self.Session()
 
     def create_tables(self):
+        # Creates all defined tables in the database if they don't exist
         Base.metadata.create_all(self.engine)
